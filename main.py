@@ -30,10 +30,8 @@ def precedence(x, y):
 def similarity(A, AN):
     s_values = []
     for a, an in zip(A, AN):
-        agg_a = aggregation(a, a)
-        agg_an = aggregation(an, an)
-        prec_1 = precedence(agg_a, a)
-        prec_2 = precedence(agg_an, an)
+        prec_1 = precedence(a, an)
+        prec_2 = precedence(an, a)
         s = min(prec_1[0], prec_2[0]), min(prec_1[1], prec_2[1])
         s_values.append(s)
     return s_values

@@ -40,10 +40,8 @@ def precedence(x, y):
 def similarity(A, AN):
     s_values = []
     for a, an in zip(A, AN):
-        agg_a = aggregation(a, a)
-        agg_an = aggregation(an, an)
-        prec_1 = precedence(agg_a, a)
-        prec_2 = precedence(agg_an, an)
+        prec_1 = precedence(a, an)
+        prec_2 = precedence(an, a)
         s = min(prec_1[0], prec_2[0]), min(prec_1[1], prec_2[1])
         s_values.append(s)
     return s_values
@@ -66,6 +64,5 @@ sorted_entropies = sorted(entropies.items(), key=lambda item: item[1])
 # Wyświetlenie wyników
 for obj_name, ent_value in sorted_entropies:
     print(f"Entropia dla obiektu {obj_name}: {ent_value:.4f}")
-
 
 ```
