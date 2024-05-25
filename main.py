@@ -67,7 +67,6 @@ def sort_intervals(intervals):
 
 
 # Główna część programu
-A = [[0.0, 1.0], [0.5, 1.0], [0.6, 0.8], [0.4, 0.7], [0.0, 1.0]]
 AN = [negation(interval) for interval in A]
 BN = [negation(interval) for interval in B]
 CN = [negation(interval) for interval in C]
