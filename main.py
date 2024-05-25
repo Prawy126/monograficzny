@@ -65,7 +65,7 @@ def process_intervals(intervals):
 
 # Sortowanie przedziałów według warunku x ≤ y
 def sort_intervals(intervals):
-    return sorted(intervals, key=lambda x: x[0])
+    return sorted(intervals, key=lambda x: x[1][0])
 
 
 # Główna część programu
