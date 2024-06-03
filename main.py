@@ -1,3 +1,5 @@
+import numpy as np
+
 # Definicja przedziałowych zbiorów rozmytych
 A = [[0.0, 1.0], [0.5, 1.0], [0.6, 0.8], [0.4, 0.7], [0.0, 1.0], [0.0, 1.0]]
 B = [[0.4, 0.7], [0.0, 1.0], [0.6, 0.9], [0.4, 0.8], [1.0, 1.0], [1.0, 1.0]]
@@ -5,38 +7,37 @@ C = [[1.0, 1.0], [0.0, 1.0], [0.9, 0.9], [0.0, 1.0], [1.0, 1.0], [1.0, 1.0]]
 D = [[0.4, 0.7], [0.2, 1.0], [0.2, 1.0], [0.4, 0.8], [0.5, 1.0], [0.5, 0.8]]
 E = [[0.5, 0.6], [0.5, 1.0], [0.6, 0.8], [0.5, 0.9], [0.8, 1.0], [0.8, 1.0]]
 
+
 # Negacja przedziału
 def negation(interval):
-    # Zwraca negację przedziału poprzez odjęcie wartości od 1 i odwrócenie końców przedziału
-    return [1 - interval[1], 1 - interval[0]]
+    return [round(1 - interval[1], 4), round(1 - interval[0], 4)]
+
 
 # Agregacja
 def aggregation(x, y):
-    # Średnia arytmetyczna z dwóch przedziałów
-    return [(x[0] + y[0]) / 2, (x[1] + y[1]) / 2]
+    return [round((x[0] + y[0]) / 2, 4), round((x[1] + y[1]) / 2, 4)]
 
-# Sprawdzenie częściowego porządku x ≤ y
+
 def part_order(x, y):
-    # Zwraca True, jeśli każdy element przedziału x jest mniejszy lub równy odpowiedniemu elementowi przedziału y
     if x[0] <= y[0] and x[1] <= y[1]:
         return True
     return False
 
+
 # Miara pierwszeństwa
 def precedence(x, y):
-    # Zwraca miarę pierwszeństwa dwóch przedziałów
     if x == y:
-        return [1 - (x[1] - x[0]), 1]
+        return [round(1 - (x[1] - x[0]), 4), 1]
     elif part_order(x, y):
         return [1, 1]
     else:
-        l = (1 - x[1] + y[0]) / 2
-        u = (1 - x[0] + y[1]) / 2
+        l = round((1 - x[1] + y[0]) / 2, 4)
+        u = round((1 - x[0] + y[1]) / 2, 4)
         return [l, u]
+
 
 # Miara podobieństwa
 def similarity(A, AN):
-    # Zwraca listę miar podobieństwa dla dwóch list przedziałów
     s_values = []
     for a, an in zip(A, AN):
         prec_1 = precedence(a, an)
@@ -45,31 +46,45 @@ def similarity(A, AN):
         s_values.append(s)
     return s_values
 
-# Średnia z dwóch przedziałów
-def mean_interval(interval1, interval2):
-    # Zwraca średnią z dwóch przedziałów
-    return [(interval1[0] + interval2[0]) / 2, (interval1[1] + interval2[1]) / 2]
 
-# Przetwarzanie listy przedziałów
-def process_intervals(intervals):
-    # Zwraca pojedynczy przedział uzyskany poprzez rekurencyjne obliczanie średniej par przedziałów
+def mean_interval(interval1, interval2):
+    """
+    Calculates the mean interval of two intervals.
+    """
+    return [round((interval1[0] + interval2[0]) / 2, 4), round((interval1[1] + interval2[1]) / 2, 4)]
+
+
+def process_intervals(intervals, name):
+    """
+    Processes a list of intervals using the mean_interval function until only one interval remains.
+    Prints the set name and iteration number for each iteration.
+    """
+    print(f"Zbiór {name}:")
+    print("   Iteracja 0:", ", ".join(map(str, intervals)))  # Wyświetlenie początkowego zestawu przedziałów
+    iteration = 1
     while len(intervals) > 1:
         result = []
         length = len(intervals)
+
+        # Iterate over the intervals in pairs
         for i in range(0, length - 1, 2):
             result.append(mean_interval(intervals[i], intervals[i + 1]))
+
+        # If the number of intervals is odd, carry the last unpaired interval to the next round
         if length % 2 != 0:
             result.append(intervals[-1])
+
         intervals = result
+
+        # Print the set name and iteration number with indentation
+        indentation = " " * (6 * (iteration - 1)) + " " * (3 * (iteration - 1))
+        print(" " * 15, indentation, "Iteracja", iteration, ":", ", ".join(map(str, intervals)))
+
+        iteration += 1
+
     return intervals[0]
 
-# Sortowanie przedziałów według warunku x ≤ y
-def sort_intervals(intervals):
-    # Zwraca listę przedziałów posortowaną według dolnej granicy przedziału
-    return sorted(intervals, key=lambda x: x[1][0])
-
-# Główna część programu
-# Obliczenie negacji dla każdego zbioru
+# Pozostała część kodu bez zmian
 AN = [negation(interval) for interval in A]
 BN = [negation(interval) for interval in B]
 CN = [negation(interval) for interval in C]
@@ -78,35 +93,27 @@ EN = [negation(interval) for interval in E]
 
 results = []
 
-# Przetwarzanie i wyświetlanie wyników dla każdego zbioru
-print("Wynik dla zbioru A")
-print(process_intervals(similarity(A,AN)))
-result_A = process_intervals(similarity(A, AN))
+print("Wyniki dla zbiorów:")
+result_A = process_intervals(similarity(A, AN), 'A')
 results.append(('A', result_A))
 
-print("\n\nWynik dla zbioru B")
-print(process_intervals(similarity(B,BN)))
-result_B = process_intervals(similarity(B, BN))
+result_B = process_intervals(similarity(B, BN), 'B')
 results.append(('B', result_B))
 
-print("\n\nWynik dla zbioru C")
-print(process_intervals(similarity(C,CN)))
-result_C = process_intervals(similarity(C, CN))
+result_C = process_intervals(similarity(C, CN), 'C')
 results.append(('C', result_C))
 
-print("\n\nWynik dla zbioru D")
-print(process_intervals(similarity(D,DN)))
-result_D = process_intervals(similarity(D, DN))
+result_D = process_intervals(similarity(D, DN), 'D')
 results.append(('D', result_D))
 
-print("\n\nWynik dla zbioru E")
-print(process_intervals(similarity(E,EN)))
-result_E = process_intervals(similarity(E, EN))
+result_E = process_intervals(similarity(E, EN), 'E')
 results.append(('E', result_E))
 
-# Sortowanie wyników według dolnej granicy przedziału
+# Sortowanie wyników według warunku x ≤ y
 sorted_results = sorted(results, key=lambda x: x[1][0])
 
-print("\n\nPosortowane wyniki:")
+print("\nPosortowane wyniki:")
 for name, interval in sorted_results:
     print(f"Zbiór {name}: {interval}")
+
+
