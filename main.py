@@ -1,3 +1,5 @@
+import numpy as np
+
 # Definicja przedziałowych zbiorów rozmytych
 A = [[0.0, 1.0], [0.5, 1.0], [0.6, 0.8], [0.4, 0.7], [0.0, 1.0], [0.0, 1.0]]
 B = [[0.4, 0.7], [0.0, 1.0], [0.6, 0.9], [0.4, 0.8], [1.0, 1.0], [1.0, 1.0]]
@@ -8,12 +10,12 @@ E = [[0.5, 0.6], [0.5, 1.0], [0.6, 0.8], [0.5, 0.9], [0.8, 1.0], [0.8, 1.0]]
 
 # Negacja przedziału
 def negation(interval):
-    return [1 - interval[1], 1 - interval[0]]
+    return [round(1 - interval[1], 4), round(1 - interval[0], 4)]
 
 
 # Agregacja
 def aggregation(x, y):
-    return [(x[0] + y[0]) / 2, (x[1] + y[1]) / 2]
+    return [round((x[0] + y[0]) / 2, 4), round((x[1] + y[1]) / 2, 4)]
 
 
 def part_order(x, y):
@@ -25,12 +27,12 @@ def part_order(x, y):
 # Miara pierwszeństwa
 def precedence(x, y):
     if x == y:
-        return [1 - (x[1] - x[0]), 1]
+        return [round(1 - (x[1] - x[0]), 4), 1]
     elif part_order(x, y):
         return [1, 1]
     else:
-        l = (1 - x[1] + y[0]) / 2
-        u = (1 - x[0] + y[1]) / 2
+        l = round((1 - x[1] + y[0]) / 2, 4)
+        u = round((1 - x[0] + y[1]) / 2, 4)
         return [l, u]
 
 
@@ -46,27 +48,43 @@ def similarity(A, AN):
 
 
 def mean_interval(interval1, interval2):
-    return [(interval1[0] + interval2[0]) / 2, (interval1[1] + interval2[1]) / 2]
+    """
+    Calculates the mean interval of two intervals.
+    """
+    return [round((interval1[0] + interval2[0]) / 2, 4), round((interval1[1] + interval2[1]) / 2, 4)]
 
 
-def process_intervals(intervals):
+def process_intervals(intervals, name):
+    """
+    Processes a list of intervals using the mean_interval function until only one interval remains.
+    Prints the set name and iteration number for each iteration.
+    """
+    print(f"Zbiór {name}:")
+    print("   Iteracja 0:", ", ".join(map(str, intervals)))  # Wyświetlenie początkowego zestawu przedziałów
+    iteration = 1
     while len(intervals) > 1:
         result = []
         length = len(intervals)
+
+        # Iterate over the intervals in pairs
         for i in range(0, length - 1, 2):
             result.append(mean_interval(intervals[i], intervals[i + 1]))
+
+        # If the number of intervals is odd, carry the last unpaired interval to the next round
         if length % 2 != 0:
             result.append(intervals[-1])
+
         intervals = result
+
+        # Print the set name and iteration number with indentation
+        indentation = " " * (6 * (iteration - 1)) + " " * (3 * (iteration - 1))
+        print(" " * 15, indentation, "Iteracja", iteration, ":", ", ".join(map(str, intervals)))
+
+        iteration += 1
+
     return intervals[0]
 
-
-# Sortowanie przedziałów według warunku x ≤ y
-def sort_intervals(intervals):
-    return sorted(intervals, key=lambda x: x[1][0])
-
-
-# Główna część programu
+# Pozostała część kodu bez zmian
 AN = [negation(interval) for interval in A]
 BN = [negation(interval) for interval in B]
 CN = [negation(interval) for interval in C]
@@ -75,34 +93,27 @@ EN = [negation(interval) for interval in E]
 
 results = []
 
-print("Wynik dla zbioru A")
-print(process_intervals(similarity(A,AN)))
-result_A = process_intervals(similarity(A, AN))
+print("Wyniki dla zbiorów:")
+result_A = process_intervals(similarity(A, AN), 'A')
 results.append(('A', result_A))
 
-print("\n\nWynik dla zbioru B")
-print(process_intervals(similarity(B,BN)))
-result_B = process_intervals(similarity(B, BN))
+result_B = process_intervals(similarity(B, BN), 'B')
 results.append(('B', result_B))
 
-print("\n\nWynik dla zbioru C")
-print(process_intervals(similarity(C,CN)))
-result_C = process_intervals(similarity(C, CN))
+result_C = process_intervals(similarity(C, CN), 'C')
 results.append(('C', result_C))
 
-print("\n\nWynik dla zbioru D")
-print(process_intervals(similarity(D,DN)))
-result_D = process_intervals(similarity(D, DN))
+result_D = process_intervals(similarity(D, DN), 'D')
 results.append(('D', result_D))
 
-print("\n\nWynik dla zbioru E")
-print(process_intervals(similarity(E,EN)))
-result_E = process_intervals(similarity(E, EN))
+result_E = process_intervals(similarity(E, EN), 'E')
 results.append(('E', result_E))
 
 # Sortowanie wyników według warunku x ≤ y
 sorted_results = sorted(results, key=lambda x: x[1][0])
 
-print("\n\nPosortowane wyniki:")
+print("\nPosortowane wyniki:")
 for name, interval in sorted_results:
     print(f"Zbiór {name}: {interval}")
+
+
