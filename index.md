@@ -123,5 +123,4 @@ for nazwa, przedzial in posortowane_wyniki:
     print(f"Zbiór {nazwa}: {przedzial}")
 
 
-
 ```
