@@ -9,6 +9,8 @@ layout: default
 ```python
 
 
+import matplotlib.pyplot as plt
+
 # Definicja przedziałowych zbiorów rozmytych
 A = [[0.0, 1.0], [0.5, 1.0], [0.6, 0.8], [0.4, 0.7], [0.0, 1.0], [0.0, 1.0]]
 B = [[0.4, 0.7], [0.0, 1.0], [0.6, 0.9], [0.4, 0.8], [1.0, 1.0], [1.0, 1.0]]
@@ -17,110 +19,130 @@ D = [[0.4, 0.7], [0.2, 1.0], [0.2, 1.0], [0.4, 0.8], [0.5, 1.0], [0.5, 0.8]]
 E = [[0.5, 0.6], [0.5, 1.0], [0.6, 0.8], [0.5, 0.9], [0.8, 1.0], [0.8, 1.0]]
 
 # Negacja przedziału
-def negacja(przedzial):
-    return [round(1 - przedzial[1], 4), round(1 - przedzial[0], 4)]
+def negation(interval):
+    return [1 - interval[1], 1 - interval[0]]
 
 # Agregacja
-def agregacja(x, y):
-    return [round((x[0] + y[0]) / 2, 4), round((x[1] + y[1]) / 2, 4)]
+def aggregation(x, y):
+    return [(x[0] + y[0]) / 2, (x[1] + y[1]) / 2]
 
-def porzadek_czesciowy(x, y):
+def part_order(x, y):
     if x[0] <= y[0] and x[1] <= y[1]:
         return True
     return False
 
+def possible_order(x, y):
+    return x[0] < y[1] and y[0] < x[1]
+
+def width(interval):
+    return interval[1] - interval[0]
+
 # Miara pierwszeństwa
-def pierwszenstwo(x, y):
+def precedence(x, y):
     if x == y:
-        return [round(1 - (x[1] - x[0]), 4), 1]
-    elif porzadek_czesciowy(x, y):
+        return [1 - (x[1] - x[0]), 1]
+    elif part_order(x, y):
         return [1, 1]
     else:
-        l = round((1 - x[1] + y[0]) / 2, 4)
-        u = round((1 - x[0] + y[1]) / 2, 4)
+        l = (1 - x[1] + y[0]) / 2
+        u = (1 - x[0] + y[1]) / 2
         return [l, u]
 
 # Miara podobieństwa
-def podobienstwo(A, AN):
-    wartosci_podobienstwa = []
+def similarity(A, AN):
+    s_values = []
     for a, an in zip(A, AN):
-        pierwsz_1 = pierwszenstwo(a, an)
-        pierwsz_2 = pierwszenstwo(an, a)
-        s = min(pierwsz_1[0], pierwsz_2[0]), min(pierwsz_1[1], pierwsz_2[1])
-        wartosci_podobienstwa.append(s)
-    return wartosci_podobienstwa
+        prec_1 = precedence(a, an)
+        prec_2 = precedence(an, a)
+        s = min(prec_1[0], prec_2[0]), min(prec_1[1], prec_2[1])
+        s_values.append(s)
+    return s_values
 
-# Średnia z dwóch przedziałów
-def srednia_przedzialow(przedzial1, przedzial2):
-    """
-    Oblicza średnią dwóch przedziałów.
-    """
-    return [round((przedzial1[0] + przedzial2[0]) / 2, 4), round((przedzial1[1] + przedzial2[1]) / 2, 4)]
+def mean_interval(interval1, interval2):
+    return [(interval1[0] + interval2[0]) / 2, (interval1[1] + interval2[1]) / 2]
 
-# Przetwarzanie listy przedziałów
-def przetwarzanie_przedzialow(przedzialy, nazwa):
-    """
-    Przetwarza listę przedziałów za pomocą funkcji srednia_przedzialow, aż pozostanie tylko jeden przedział.
-    Wyświetla nazwę zbioru i numer iteracji dla każdej iteracji.
-    """
-    print(f"Zbiór {nazwa}:")
-    print("   Iteracja 0:", ", ".join(map(str, przedzialy)))  # Wyświetlenie początkowego zestawu przedziałów
-    iteracja = 1
-    while len(przedzialy) > 1:
-        wynik = []
-        dlugosc = len(przedzialy)
+def process_intervals(intervals):
+    while len(intervals) > 1:
+        result = []
+        length = len(intervals)
+        for i in range(0, length - 1, 2):
+            result.append(mean_interval(intervals[i], intervals[i + 1]))
+        if length % 2 != 0:
+            result.append(intervals[-1])
+        intervals = result
+    return intervals[0]
 
-        # Iteracja przez przedziały parami
-        for i in range(0, dlugosc - 1, 2):
-            wynik.append(srednia_przedzialow(przedzialy[i], przedzialy[i + 1]))
+# Główna część programu
+AN = [negation(interval) for interval in A]
+BN = [negation(interval) for interval in B]
+CN = [negation(interval) for interval in C]
+DN = [negation(interval) for interval in D]
+EN = [negation(interval) for interval in E]
 
-        # Jeśli liczba przedziałów jest nieparzysta, przenieś ostatni nieparzysty przedział do następnej rundy
-        if dlugosc % 2 != 0:
-            wynik.append(przedzialy[-1])
+results = []
 
-        przedzialy = wynik
+print("Wynik dla zbioru A")
+result_A = process_intervals(similarity(A, AN))
+results.append(('A', result_A))
+print(result_A)
 
-        # Drukowanie nazwy zbioru i numeru iteracji z wcięciem
-        wciecie = " " * (6 * (iteracja - 1)) + " " * (3 * (iteracja - 1))
-        print(" " * 15, wciecie, "Iteracja", iteracja, ":", ", ".join(map(str, przedzialy)))
+print("\n\nWynik dla zbioru B")
+result_B = process_intervals(similarity(B, BN))
+results.append(('B', result_B))
+print(result_B)
 
-        iteracja += 1
+print("\n\nWynik dla zbioru C")
+result_C = process_intervals(similarity(C, CN))
+results.append(('C', result_C))
+print(result_C)
 
-    return przedzialy[0]
+print("\n\nWynik dla zbioru D")
+result_D = process_intervals(similarity(D, DN))
+results.append(('D', result_D))
+print(result_D)
 
-# Obliczenie negacji dla każdego zbioru
-AN = [negacja(przedzial) for przedzial in A]
-BN = [negacja(przedzial) for przedzial in B]
-CN = [negacja(przedzial) for przedzial in C]
-DN = [negacja(przedzial) for przedzial in D]
-EN = [negacja(przedzial) for przedzial in E]
+print("\n\nWynik dla zbioru E")
+result_E = process_intervals(similarity(E, EN))
+results.append(('E', result_E))
+print(result_E)
 
-wyniki = []
+print()
+print("-------------------------------------------------------------")
+print("Posortowane entropie:")
 
-# Przetwarzanie i wyświetlanie wyników dla każdego zbioru
-print("Wyniki dla zbiorów:")
-wynik_A = przetwarzanie_przedzialow(podobienstwo(A, AN), 'A')
-wyniki.append(('A', wynik_A))
+def custom_sort(intervals):
+    n = len(intervals)
+    for i in range(n):
+        for j in range(0, n - i - 1):
+            # Sprawdzamy czy możliwe w obie strony
+            if possible_order(intervals[j][1], intervals[j + 1][1]) and possible_order(intervals[j + 1][1], intervals[j][1]):
+                # Jeśli możliwe w obie strony, sortujemy według szerokości
+                if width(intervals[j][1]) > width(intervals[j + 1][1]):
+                    intervals[j], intervals[j + 1] = intervals[j + 1], intervals[j]
+            elif possible_order(intervals[j][1], intervals[j + 1][1]):
+                intervals[j], intervals[j + 1] = intervals[j + 1], intervals[j]
+    # Zaokrąglamy wyniki do czterech miejsc po przecinku
+    for i in range(len(intervals)):
+        intervals[i] = (intervals[i][0], [round(intervals[i][1][0], 4), round(intervals[i][1][1], 4)])
+    return intervals
 
-wynik_B = przetwarzanie_przedzialow(podobienstwo(B, BN), 'B')
-wyniki.append(('B', wynik_B))
+sorted_results = custom_sort(results)
+print(sorted_results)
 
-wynik_C = przetwarzanie_przedzialow(podobienstwo(C, CN), 'C')
-wyniki.append(('C', wynik_C))
+# Tworzenie wykresu
+zbior_names = [r[0] for r in sorted_results]
+interval_values = [r[1] for r in sorted_results]
 
-wynik_D = przetwarzanie_przedzialow(podobienstwo(D, DN), 'D')
-wyniki.append(('D', wynik_D))
+plt.figure(figsize=(10, 6))
+for i, (zbior, interval) in enumerate(zip(zbior_names, interval_values)):
+    plt.plot(interval, [i, i], marker='o', label=f'{zbior}: {interval}')
 
-wynik_E = przetwarzanie_przedzialow(podobienstwo(E, EN), 'E')
-wyniki.append(('E', wynik_E))
-
-# Sortowanie wyników według warunku x ≤ y
-posortowane_wyniki = sorted(wyniki, key=lambda x: x[1][0])
-
-print("\nWyniki po sortowaniu possible:")
-
-for nazwa, przedzial in posortowane_wyniki:
-    print(f"Zbiór {nazwa}: {przedzial}")
+plt.yticks(range(len(zbior_names)), zbior_names)
+plt.xlabel('Wartości przedziałów')
+plt.ylabel('Zbiory')
+plt.title('Wizualizacja przedziałów zbiorów')
+plt.legend()
+plt.show()
 
 
 ```
