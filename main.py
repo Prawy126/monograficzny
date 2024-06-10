@@ -16,7 +16,7 @@ def aggregation(x, y):
     return [(x[0] + y[0]) / 2, (x[1] + y[1]) / 2]
 
 def part_order(x, y):
-    if x[0] <= y[0] and x[1] <= y[1]:
+    if x[0] < y[0] and x[1] < y[1]:
         return True
     return False
 
